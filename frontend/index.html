@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Movie List</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+  <h1 class="mb-4">🎬 Movie Reviews</h1>
+
+  <div id="movie-list" class="row g-3"></div>
+</div>
+
+<script>
+  async function loadMovies() {
+    const response = await fetch('http://localhost:8080/api/movies');
+    const movies = await response.json();
+    const container = document.getElementById('movie-list');
+    container.innerHTML = '';
+
+    movies.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'col-md-4';
+      card.innerHTML = `
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">${movie.title}</h5>
+            <p class="card-text"><strong>Genre:</strong> ${movie.genre}<br><strong>Year:</strong> ${movie.releaseYear}</p>
+            <a href="add-review.html?movieId=${movie.id}" class="btn btn-sm btn-outline-primary">Add Review</a>
+            <button class="btn btn-sm btn-danger" onclick="deleteMovie(${movie.id})">Delete</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  async function deleteMovie(id) {
+    const confirm = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will delete the movie!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!'
+    });
+    if (confirm.isConfirmed) {
+      await fetch(`http://localhost:8080/api/movies/${id}`, { method: 'DELETE' });
+      await loadMovies();
+    }
+  }
+
+  loadMovies();
+</script>
+</body>
+</html>
